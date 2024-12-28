@@ -46,9 +46,16 @@ func GetUserById(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func DeleteUser(c *gin.Context) {
+func UpdateUser(c *gin.Context) {
 	id := c.Param("id")
-	_, err := models.GetUserById(id)
+	var input models.UserUpdate // Структура для даних, які можуть оновлюватися
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input data"})
+		return
+	}
+
+	// Отримання існуючого користувача з бази
+	user, err := models.GetUserByIdFull(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
@@ -57,7 +64,26 @@ func DeleteUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	err = models.DeleteUser(id)
+
+	// Оновлення полів користувача
+	if input.UserName != "" {
+		user.UserName = input.UserName
+	}
+	if input.Email != "" {
+		user.Email = input.Email
+	}
+
+	if err := models.UpdateUser(user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, input)
+}
+
+func DeleteUser(c *gin.Context) {
+	id := c.Param("id")
+	err := models.DeleteUser(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

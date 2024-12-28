@@ -26,6 +26,11 @@ type UserResponse struct {
 	IsActive bool   `json:"isActive"`
 }
 
+type UserUpdate struct {
+	UserName string `json:"userName"`
+	Email    string `json:"email"`
+}
+
 func init() {
 	var err error
 	err = config.Connect()
@@ -96,6 +101,27 @@ func GetUserById(id string) (*UserResponse, error) {
 		Role:     user.Role,
 		IsActive: user.IsActive,
 	}, nil
+}
+
+func GetUserByIdFull(id string) (*Users, error) {
+	var user Users
+	result := db.Where("id = ?", id).First(&user) // Використання First замість Find
+	if result.Error != nil {
+		return nil, result.Error // Повертаємо помилку, якщо щось пішло не так
+	}
+	if result.RowsAffected == 0 {
+		return nil, gorm.ErrRecordNotFound // Перевірка чи був знайдений запис
+	}
+
+	return &user, nil
+}
+
+func UpdateUser(user *Users) error {
+
+	if err := db.Save(user).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
 func DeleteUser(id string) error {
