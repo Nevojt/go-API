@@ -17,13 +17,7 @@ func CreateUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, gin.H{
-		"ID":       newUser.ID,
-		"userName": newUser.UserName,
-		"email":    newUser.Email,
-		"role":     newUser.Role,
-		"isActive": newUser.IsActive,
-	})
+	c.JSON(http.StatusCreated, newUser)
 
 }
 

@@ -39,7 +39,7 @@ func init() {
 	}
 }
 
-func CreateUser(user *Users) (*Users, error) {
+func CreateUser(user *Users) (*UserResponse, error) {
 
 	hashedPassword, err := util.HashPassword(user.Password)
 	if err != nil {
@@ -49,7 +49,13 @@ func CreateUser(user *Users) (*Users, error) {
 	if err = db.Create(user).Error; err != nil {
 		return nil, err
 	}
-	return user, nil
+	return &UserResponse{
+		ID:       user.ID,
+		UserName: user.UserName,
+		Email:    user.Email,
+		Role:     user.Role,
+		IsActive: user.IsActive,
+	}, nil
 }
 
 func GetAllUsers() []Users {
