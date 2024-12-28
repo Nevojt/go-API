@@ -11,6 +11,7 @@ func main() {
 	app := gin.New()
 	app.POST("/user", controllers.CreateUser)
 	app.GET("/user", controllers.GetAllUsers)
+	app.GET("/user/:id", controllers.GetUserById)
 
 	if err := app.Run(); err != nil {
 		fmt.Println("Failed to start server:", err)

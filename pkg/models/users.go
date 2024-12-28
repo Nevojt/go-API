@@ -78,3 +78,22 @@ func GetAllUsersResponse() []UserResponse {
 	}
 	return response
 }
+
+func GetUserById(id string) (*UserResponse, error) {
+	var user Users
+	result := db.Where("id = ?", id).First(&user) // Використання First замість Find
+	if result.Error != nil {
+		return nil, result.Error // Повертаємо помилку, якщо щось пішло не так
+	}
+	if result.RowsAffected == 0 {
+		return nil, gorm.ErrRecordNotFound // Перевірка чи був знайдений запис
+	}
+
+	return &UserResponse{
+		ID:       user.ID,
+		UserName: user.UserName,
+		Email:    user.Email,
+		Role:     user.Role,
+		IsActive: user.IsActive,
+	}, nil
+}
