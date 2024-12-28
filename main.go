@@ -12,6 +12,7 @@ func main() {
 	app.POST("/user", controllers.CreateUser)
 	app.GET("/user", controllers.GetAllUsers)
 	app.GET("/user/:id", controllers.GetUserById)
+	app.DELETE("/user/:id", controllers.DeleteUser)
 
 	if err := app.Run(); err != nil {
 		fmt.Println("Failed to start server:", err)

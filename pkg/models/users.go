@@ -97,3 +97,15 @@ func GetUserById(id string) (*UserResponse, error) {
 		IsActive: user.IsActive,
 	}, nil
 }
+
+func DeleteUser(id string) error {
+	var user Users
+	result := db.Where("id =?", id).Delete(&user)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
+}

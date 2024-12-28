@@ -45,3 +45,22 @@ func GetUserById(c *gin.Context) {
 
 	c.JSON(http.StatusOK, user)
 }
+
+func DeleteUser(c *gin.Context) {
+	id := c.Param("id")
+	_, err := models.GetUserById(id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	err = models.DeleteUser(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+}
