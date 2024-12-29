@@ -2,10 +2,12 @@ package controllers
 
 import (
 	"api/pkg/models"
+	"api/pkg/util"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
+	"strconv"
 )
 
 func CreateUser(c *gin.Context) {
@@ -45,6 +47,21 @@ func GetUserById(c *gin.Context) {
 
 	c.JSON(http.StatusOK, user)
 }
+
+//func GetUserByEmail(c *gin.Context) {
+//	email := c.Param("email")
+//	user, err := models.GetUserByEmailFull(email)
+//	if err != nil {
+//		if errors.Is(err, gorm.ErrRecordNotFound) {
+//			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+//			return
+//		}
+//		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+//		return
+//	}
+//
+//	c.JSON(http.StatusOK, user)
+//}
 
 func UpdateUser(c *gin.Context) {
 	id := c.Param("id")
@@ -89,4 +106,35 @@ func DeleteUser(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+}
+
+func LoginHandler(c *gin.Context) {
+	var loginRequest = models.LoginRequest{}
+	if err := c.ShouldBindJSON(&loginRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid login request"})
+		return
+	}
+	//	Перевірка логіна і пароля
+	user, err := models.GetUserByEmailFull(loginRequest.Email)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if !util.CheckPasswordHash(loginRequest.Password, user.Password) {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+
+	}
+	token, err := util.GenerateToken(user.Email, strconv.Itoa(int(user.ID)))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"token": token,
+	})
 }

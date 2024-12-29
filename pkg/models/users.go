@@ -31,6 +31,17 @@ type UserUpdate struct {
 	Email    string `json:"email"`
 }
 
+// LoginRequest Структура для передачі логіна
+type LoginRequest struct {
+	Email    string `json:"Email"`
+	Password string `json:"password"`
+}
+
+// TokenResponse Структура для токену
+type TokenResponse struct {
+	Token string `json:"token"`
+}
+
 func init() {
 	var err error
 	err = config.Connect()
@@ -106,6 +117,19 @@ func GetUserById(id string) (*UserResponse, error) {
 func GetUserByIdFull(id string) (*Users, error) {
 	var user Users
 	result := db.Where("id = ?", id).First(&user) // Використання First замість Find
+	if result.Error != nil {
+		return nil, result.Error // Повертаємо помилку, якщо щось пішло не так
+	}
+	if result.RowsAffected == 0 {
+		return nil, gorm.ErrRecordNotFound // Перевірка чи був знайдений запис
+	}
+
+	return &user, nil
+}
+
+func GetUserByEmailFull(email string) (*Users, error) {
+	var user Users
+	result := db.Where("email = ?", email).First(&user) // Використання First замість Find
 	if result.Error != nil {
 		return nil, result.Error // Повертаємо помилку, якщо щось пішло не так
 	}
