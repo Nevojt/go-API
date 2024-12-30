@@ -27,6 +27,22 @@ func CreateUser(c *gin.Context) {
 
 // GetAllUsers Get all users
 func GetAllUsers(c *gin.Context) {
+	userID := c.GetString("user_id")
+
+	user, err := models.GetUserById(userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if user.Role != "admin" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
 	users := models.GetAllUsersResponse()
 	c.JSON(http.StatusOK, gin.H{
 		"users": users,
@@ -47,21 +63,6 @@ func GetUserById(c *gin.Context) {
 
 	c.JSON(http.StatusOK, user)
 }
-
-//func GetUserByEmail(c *gin.Context) {
-//	email := c.Param("email")
-//	user, err := models.GetUserByEmailFull(email)
-//	if err != nil {
-//		if errors.Is(err, gorm.ErrRecordNotFound) {
-//			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
-//			return
-//		}
-//		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-//		return
-//	}
-//
-//	c.JSON(http.StatusOK, user)
-//}
 
 func UpdateUser(c *gin.Context) {
 	// Отримуємо ID з URL параметра
@@ -109,6 +110,11 @@ func UpdateUser(c *gin.Context) {
 
 func DeleteUser(c *gin.Context) {
 	id := c.Param("id")
+	tokenID := c.GetString("user_id")
+	if tokenID != id {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
 	err := models.DeleteUser(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

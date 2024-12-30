@@ -14,8 +14,6 @@ func main() {
 	app := gin.New()
 	app.POST("/user", controllers.CreateUser)
 	app.GET("/user/:id", controllers.GetUserById)
-	app.DELETE("/user/:id", controllers.DeleteUser)
-	//app.PATCH("/user/:id", controllers.UpdateUser)
 	app.POST("/login", controllers.LoginHandler)
 
 	protected := app.Group("/protected")
@@ -23,6 +21,7 @@ func main() {
 	{
 		protected.GET("/users", controllers.GetAllUsers)
 		protected.PATCH("/user/:id", controllers.UpdateUser)
+		protected.DELETE("/user/:id", controllers.DeleteUser)
 	}
 
 	if err := app.Run(port); err != nil {

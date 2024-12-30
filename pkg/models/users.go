@@ -150,12 +150,20 @@ func UpdateUser(user *Users) error {
 
 func DeleteUser(id string) error {
 	var user Users
+	userAction := db.Where("id = ?", id).First(&user)
+	if userAction.Error != nil {
+		if userAction.RowsAffected == 0 {
+			return gorm.ErrRecordNotFound // Перевірка чи був знайдений запис
+		}
+	}
+	user.IsActive = false
+	if err := db.Save(&user).Error; err != nil {
+		return err
+	}
+
 	result := db.Where("id =?", id).Delete(&user)
 	if result.Error != nil {
 		return result.Error
-	}
-	if result.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
 	}
 	return nil
 }
