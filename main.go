@@ -15,14 +15,14 @@ func main() {
 	app.POST("/user", controllers.CreateUser)
 	app.GET("/user/:id", controllers.GetUserById)
 	app.DELETE("/user/:id", controllers.DeleteUser)
-	app.PATCH("/user/:id", controllers.UpdateUser)
+	//app.PATCH("/user/:id", controllers.UpdateUser)
 	app.POST("/login", controllers.LoginHandler)
 
 	protected := app.Group("/protected")
 	protected.Use(controllers.AuthMiddleware())
 	{
 		protected.GET("/users", controllers.GetAllUsers)
-		//protected.GET("/protected/:id", controllers.GetUserByIdFull)
+		protected.PATCH("/user/:id", controllers.UpdateUser)
 	}
 
 	if err := app.Run(port); err != nil {

@@ -64,7 +64,16 @@ func GetUserById(c *gin.Context) {
 //}
 
 func UpdateUser(c *gin.Context) {
+	// Отримуємо ID з URL параметра
 	id := c.Param("id")
+
+	// Отримуємо ID користувача з токена
+	tokenID := c.GetString("user_id")
+	if tokenID != id {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
 	var input models.UserUpdate // Структура для даних, які можуть оновлюватися
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input data"})
